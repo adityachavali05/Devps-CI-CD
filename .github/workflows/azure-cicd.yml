@@ -75,8 +75,7 @@ jobs:
       - name: Deploy to AKS using Ansible
         run: |
           ansible-playbook \
-            -i 'localhost,' \
-            -c local \
+            -i ansible/inventory.ini \
             ansible/deploy.yml \
             -e "image_tag=${GITHUB_SHA}"
 
