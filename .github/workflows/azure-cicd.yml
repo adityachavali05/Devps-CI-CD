@@ -1,4 +1,5 @@
-﻿name: Campus Booking - Azure CI/CD
+﻿
+name: Campus Booking - Azure CI/CD
 
 on:
   push:
@@ -65,10 +66,19 @@ jobs:
           cluster-name: ${{ env.AKS_CLUSTER }}
           admin: 'true'
 
-      - name: Deploy updated image to AKS
+      - name: Install Ansible
         run: |
-          kubectl set image deployment/campus-booking \
-            campus-booking="$ACR_LOGIN_SERVER/$IMAGE_NAME:${{ github.sha }}"
+          python3 -m venv .venv
+          .venv/bin/pip install ansible
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+
+      - name: Deploy to AKS using Ansible
+        run: |
+          ansible-playbook \
+            -i 'localhost,' \
+            -c local \
+            ansible/deploy.yml \
+            -e "image_tag=${GITHUB_SHA}"
 
       - name: Verify deployment rollout
         run: |

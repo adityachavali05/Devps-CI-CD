@@ -1,0 +1,59 @@
+﻿---
+- name: Deploy Campus Booking application to Azure AKS
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    image_name: "campuscicdacr.azurecr.io/campus-booking:{{ image_tag }}"
+
+  tasks:
+    - name: Update Kubernetes deployment image
+      ansible.builtin.command:
+        argv:
+          - kubectl
+          - set
+          - image
+          - deployment/campus-booking
+          - "campus-booking={{ image_name }}"
+      register: image_update
+      changed_when: "'image updated' in image_update.stdout"
+
+    - name: Display image update result
+      ansible.builtin.debug:
+        var: image_update.stdout
+
+    - name: Wait for Kubernetes rollout
+      ansible.builtin.command:
+        argv:
+          - kubectl
+          - rollout
+          - status
+          - deployment/campus-booking
+          - --timeout=180s
+
+    - name: Verify running application pods
+      ansible.builtin.command:
+        argv:
+          - kubectl
+          - get
+          - pods
+      register: pod_status
+      changed_when: false
+
+    - name: Display pod status
+      ansible.builtin.debug:
+        var: pod_status.stdout_lines
+
+    - name: Verify Kubernetes service
+      ansible.builtin.command:
+        argv:
+          - kubectl
+          - get
+          - services
+      register: service_status
+      changed_when: false
+
+    - name: Display service status
+      ansible.builtin.debug:
+        var: service_status.stdout_lines
