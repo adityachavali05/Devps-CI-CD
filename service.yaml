@@ -1,13 +1,12 @@
-apiVersion: v1
+﻿apiVersion: v1
 kind: Service
 metadata:
   name: campus-booking-service
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: campus-booking
   ports:
     - protocol: TCP
-      port: 8080
+      port: 80
       targetPort: 8080
-      nodePort: 30080
